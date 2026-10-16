@@ -9,8 +9,8 @@
 <select id="jump" class="jump" aria-label="Jump to another section"></select><div id="tasks"></div>
 <div class="nav"><button class="btn secondary" id="back">← Back</button><button class="btn" id="next">Next Section →</button></div>
 <h3>Notes / Items to Carry Forward</h3><textarea class="notes" id="notes" placeholder="Repairs, concerns, unfinished tasks..."></textarea>
-<div class="actions"><button class="btn" id="emailpdf">Email PDF to Scott</button><button class="btn secondary" id="newday">Start New Day</button></div><p class="small">Recipient: <strong>scott.hill@thebranchschool.org</strong> · Select Mail from the share menu and enter Scott’s address.</p><p id="submitstatus" class="small" role="status"></p><div class="footer">Facilities checklist · Progress stays saved on this device until you select Start New Day. Only sending the PDF through your email app delivers it to Scott. Nothing is uploaded to GitHub.</div>
-</main><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script>
+<div class="actions"><button class="btn" id="emailreport">Email Checklist to Scott</button><button class="btn secondary" id="newday">Start New Day</button></div><p class="small">Recipient: <strong>scott.hill@thebranchschool.org</strong> · The email address, subject, and checklist will be filled in automatically.</p><p id="submitstatus" class="small" role="status"></p><div class="footer">Facilities checklist · Progress stays saved on this device until you select Start New Day. The email app prepares your report; tap Send to deliver it to Scott. Nothing is uploaded to GitHub.</div>
+</main><script>
 const SECTIONS=[["Arrival & Opening Walk","Complete first",["Report to work on time and use required PPE/safety equipment for the task.","Put up the Texas flag and American flag.","Walk both buildings and the campus immediately upon arrival; identify maintenance, safety, cleanliness, and security concerns.","Conduct the facilities walk with Scott and review priority items for the day.","Make any immediate hazard safe; report significant concerns to Scott."]],["Morning Campus Setup","Prepare student and outdoor areas",["Re-adjust rubber swing-set mats.","Organize and clean the mud kitchen and North Wing patio.","Inspect playground equipment; address/remove ants, wasps, insects, spiderwebs, and other hazards as needed.","Clean outdoor tables and put up outdoor umbrellas.","Blow off sidewalks and patios.","Remove sandbox covers; inspect sandboxes for ants/insects and treat ant beds as needed using school safety procedures.","Rake Kiddie Cushion back into place and return playground areas to a safe, orderly condition."]],["Throughout the Day","Keep campus clean, stocked, and functional",["Review open maintenance tickets and assigned projects; work by safety, urgency, and impact on school operations.","Restock paper towels/toilet paper in restrooms and supplies in kitchens/designated areas as needed.","Check all restrooms mid-morning and mid-afternoon for cleanliness and supplies.","Pick up litter, branches, and misplaced items; keep hallways, common areas, playgrounds, and outdoor spaces clean and orderly.","Water potted plants and other landscaped areas as needed.","Perform routine lighting replacement, minor repairs, touch-up paint, and preventive maintenance as time allows.","Keep tools, materials, and work areas safe, organized, and secured.","Document completed work in the maintenance system and close completed tickets promptly."]],["Mid-Afternoon Check","Before end-of-day reset",["Recheck all restrooms for cleanliness and supplies.","Walk hallways, common areas, playgrounds, and outdoor spaces; correct safety/cleanliness concerns.","Check progress on open tickets and assigned projects; communicate delays or needs."]],["End-of-Day Reset","Return campus to ready condition",["Restock paper in all copiers.","Stack chairs in classrooms and common areas so the cleaning company can clean properly.","Pick up trash from hallways, tops of lockers, common spaces, and other areas.","Push outdoor chairs underneath tables.","Return playground items (tricycles, toys, equipment, etc.) to designated locations.","Put sandbox covers back on and strap them down securely.","Take down and store outdoor umbrellas.","Hose off concrete areas with mud, sticky substances, or other debris as needed."]],["Security & Closing Walk","Must be complete before leaving",["Lock all exterior doors in both buildings and all storage rooms.","Close all gates; ensure classroom and office doors are locked.","Ensure the outdoor restroom at HMS is locked.","Set all Lower School thermostats to 78°F.","Take down and store the Texas flag and American flag.","Complete a final building-and-grounds walk-through for cleanliness, organization, safety, and security.","Update/close completed maintenance tickets and report any unresolved priority issue to Scott before leaving."]],["Stop & Notify Scott","Before purchasing, calling a vendor, or leaving a major issue unresolved",["A significant safety/security concern cannot be corrected immediately.","A repair requires parts, equipment, materials, or outside vendor/contractor assistance.","A problem is recurring, may become a larger repair, or may disrupt school operations.","An assigned project is delayed or an issue may affect completion."]],["Weekly Responsibilities","",["Inspect HMS lockers and repair/address doors that need attention.","Weed flowerbeds and landscaped areas not maintained by the lawn crew.","On mowing day, clear items from grassy areas so the lawn crew can properly maintain the campus.","Monitor the lawn crew’s work; communicate appropriate property/landscaping concerns and report recurring or significant concerns to Scott.","Review open preventive-maintenance items and recurring facility issues."]],["Monthly Responsibilities","",["Touch up paint throughout both buildings, including interior and exterior areas.","Clean exterior windows.","Conduct a fire-safety walkthrough of both buildings; address/report issues in offices, classrooms, common areas, utility closets, storage areas, and other applicable spaces.","Pressure wash concrete areas.","Clean out gutters.","Check AEDs and document the inspection.","Check/replace air filters as required.","Check/replace water filters when the indicator light shows replacement is needed."]],["As Needed / Weather & Special Events","",["Prepare the campus for severe weather, freezes, hurricanes, or other weather events as directed.","Secure outdoor furniture, equipment, playground items, buildings, and campus property before weather events.","Assist with cleanup and recovery after severe weather.","Assist vendors/contractors with access only when specifically assigned.","Support school events, special projects, and other facilities duties as assigned."]]];
 const day=document.getElementById('day'),initials=document.getElementById('initials'),notes=document.getElementById('notes');
 let state={},current=0;
@@ -33,48 +33,24 @@ document.getElementById('next').onclick=()=>{if(current===SECTIONS.length-1){exp
 day.value=today();day.onchange=load;initials.oninput=save;notes.oninput=save;load();
 function exportReport(){const esc=x=>'"'+String(x??'').replace(/"/g,'""')+'"';const rows=[['Date',day.value],['Initials',initials.value],['Notes',notes.value],[],['Section','Task','Status']];SECTIONS.forEach((s,si)=>s[2].forEach((task,i)=>rows.push([s[0],task,state.checked?.[si+':'+i]?'Complete':'Not complete'])));const csv='\uFEFF'+rows.map(r=>r.map(esc).join(',')).join('\r\n');const a=document.createElement('a'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.href=url;a.download='Branch-Facilities-'+day.value+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
-async function emailPdf(){
- const status=document.getElementById('submitstatus'),button=document.getElementById('emailpdf');
- if(!window.jspdf){status.textContent='PDF generator could not load. Check your internet connection and refresh.';return}
- button.disabled=true;status.textContent='Creating PDF…';
- try{
-  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});
-  const margin=16,pageW=210,width=pageW-2*margin;let y=18;
-  const next=(h)=>{if(y+h>278){doc.addPage();y=18}};
-  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('THE BRANCH SCHOOL',margin,y);y+=8;
-  doc.setFontSize(13);doc.text('William - Daily Facilities Checklist',margin,y);y+=8;
-  doc.setFont('helvetica','normal');doc.setFontSize(10);
-  doc.text('Date: '+day.value+'    Initials: '+(initials.value||'Not entered'),margin,y);y+=8;
-  const daily=SECTIONS.slice(0,countDaily),total=daily.reduce((n,s)=>n+s[2].length,0),done=daily.reduce((n,s,si)=>n+s[2].filter((_,i)=>state.checked?.[si+':'+i]).length,0);
-  doc.text('Daily completed: '+done+' of '+total,y?margin:margin,y);y+=10;
-  SECTIONS.forEach((section,si)=>{
-   next(16);doc.setFillColor(21,51,84);doc.rect(margin,y-5,width,9,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(section[0].toUpperCase(),margin+3,y+1);y+=11;doc.setTextColor(15,25,35);doc.setFont('helvetica','normal');doc.setFontSize(9);
-   section[2].forEach((task,i)=>{
-    const checked=!!state.checked?.[si+':'+i];const lines=doc.splitTextToSize(task,width-19);
-    const height=Math.max(7,lines.length*4.6+3);next(height);
-    doc.setDrawColor(90,110,130);doc.rect(margin+1,y-3,4.2,4.2);
-    if(checked){doc.setFont('helvetica','bold');doc.text('X',margin+1.6,y+.25);doc.setFont('helvetica','normal')}
-    doc.text(lines,margin+9,y);
-    if(checked){let ty=y;lines.forEach(line=>{const tw=doc.getTextWidth(line);doc.setDrawColor(145,145,145);doc.line(margin+9,ty-1.1,margin+9+tw,ty-1.1);ty+=4.6})}
-    y+=height;
-   });y+=3;
-  });
-  next(20);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Daily notes / items to carry forward',margin,y);y+=7;
-  doc.setFont('helvetica','normal');doc.setFontSize(9);
-  const lines=doc.splitTextToSize(notes.value.trim()||'No notes entered.',width);
-  lines.forEach(line=>{next(5);doc.text(line,margin,y);y+=5});
-  const filename='William-Facilities-'+day.value+'.pdf';
-  const blob=doc.output('blob'),file=new File([blob],filename,{type:'application/pdf'});
-  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-   status.textContent='Choose Mail, enter scott.hill@thebranchschool.org, then tap Send.';
-   await navigator.share({files:[file],title:'Facilities Checklist - '+day.value,text:'Daily facilities checklist for Scott Hill. Send to scott.hill@thebranchschool.org'});
-  }else{
-   doc.save(filename);
-   status.textContent='PDF downloaded. Attach it to an email addressed to scott.hill@thebranchschool.org. The browser cannot attach files automatically here.';
-  }
- }catch(e){if(e.name!=='AbortError')status.textContent='Unable to share PDF: '+e.message}
- finally{button.disabled=false}
+function emailChecklist(){
+ const recipient='scott.hill@thebranchschool.org';
+ const subject='William - Daily Facilities Checklist - '+day.value;
+ const daily=SECTIONS.slice(0,countDaily);
+ const total=daily.reduce((n,s)=>n+s[2].length,0);
+ const completed=daily.reduce((n,s,si)=>n+s[2].filter((_,i)=>state.checked?.[si+':'+i]).length,0);
+ const lines=['THE BRANCH SCHOOL - DAILY FACILITIES CHECKLIST','Date: '+day.value,'Employee initials: '+(initials.value.trim()||'Not entered'),'Daily progress: '+completed+' of '+total+' tasks complete','','Completed = [X] | Unfinished = [ ]',''];
+ SECTIONS.forEach((section,si)=>{
+   lines.push((si<6?(si+1)+'. ':'')+section[0].toUpperCase());
+   section[2].forEach((task,i)=>lines.push((state.checked?.[si+':'+i]?'[X] ':'[ ] ')+task));
+   lines.push('');
+ });
+ lines.push('DAILY NOTES / ITEMS TO CARRY FORWARD',notes.value.trim()||'No notes entered.','','Sent from William’s Branch School Facilities Checklist');
+ const url='mailto:'+recipient+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+ if(url.length>12000&&!confirm('This checklist is long and some email apps may truncate it. Continue opening Mail?'))return;
+ document.getElementById('submitstatus').textContent='Your email app will open with Scott’s address and the checklist ready. Tap Send to deliver it.';
+ window.location.href=url;
 }
-document.getElementById('emailpdf').onclick=emailPdf;
+document.getElementById('emailreport').onclick=emailChecklist;
 document.getElementById('newday').onclick=startNewDay;
 </script></body></html>
