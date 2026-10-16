@@ -8,7 +8,7 @@ function doPost(e){
   const lock=LockService.getScriptLock();lock.waitLock(15000);
   try{
     const data=JSON.parse(e.postData.contents);
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(data.date)||!Array.isArray(data.sections)||data.sections.length!==10)throw Error('Invalid checklist');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(data.date)||!Array.isArray(data.sections)||data.sections.length!==10)throw Error('Invalid checklist');
     if(JSON.stringify(data).length>32000)throw Error('Report too large');
     if(!/^[a-f0-9-]{36}$/.test(data.id||''))throw Error('Invalid report ID');
     // Limit file content to expected form fields to avoid writing arbitrary objects.
