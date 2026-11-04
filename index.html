@@ -3,7 +3,7 @@
 .william-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease,visibility .65s ease;z-index:9999}.william-overlay.show{opacity:1;visibility:visible}.william-overlay img{width:min(86vw,430px);max-height:78dvh;object-fit:contain;border-radius:18px;box-shadow:0 20px 70px #0009}@media(prefers-reduced-motion:reduce){.william-overlay{transition:none}}
 </style></head><body><main class="app">
 <div class="eyebrow">THE BRANCH SCHOOL · FACILITIES</div><h1>Good morning, William</h1><p>Your campus maintenance checklist</p>
-<div id="frequencyPicker" class="meter-wrap"><strong>What checklist are you working on?</strong><p class="small">Choose a schedule to see the tasks for that round.</p><div class="actions"><button class="btn" data-frequency="daily">Daily</button><button class="btn secondary" data-frequency="weekly">Weekly</button><button class="btn secondary" data-frequency="monthly">Monthly</button></div></div>
+<div id="frequencyPicker" class="meter-wrap"><strong>What checklist are you working on?</strong><p class="small">Choose a schedule to see the tasks for that round.</p><div class="actions"><button class="btn" data-frequency="daily">Daily <span class="due-label" id="dailyDue"></span></button><button class="btn secondary" data-frequency="weekly">Weekly <span class="due-label" id="weeklyDue"></span></button><button class="btn secondary" data-frequency="monthly">Monthly <span class="due-label" id="monthlyDue"></span></button></div><p class="small">Schedule: Daily on school days · Weekly on Mondays · Monthly on the first school day. If school is closed, complete the monthly round on the next school day.</p></div>
 <div id="checklistView" hidden>
 <div class="datebar"><label>Checklist date<input id="day" type="date"></label><label>Employee initials<input id="initials" placeholder="Initials" maxlength="15" autocomplete="off"></label></div>
 <div class="meter-wrap"><div class="between"><strong>Checklist progress</strong><span id="overall" class="daybadge">0 / 0</span></div><div class="meter"><div id="meter" class="fill"></div></div><p class="tip">Your progress is saved automatically, even if you refresh or close this page.</p></div>
@@ -19,6 +19,12 @@ const day=document.getElementById('day'),initials=document.getElementById('initi
 let state={},current=0,frequency=null,viewSections=[];
 const today=()=>{let d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const key=()=> 'branch-facilities-v1-'+day.value+'-'+frequency;
+function dateParts(v){const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)}
+function isWeekday(d){return d.getDay()!==0&&d.getDay()!==6}
+function firstWeekday(y,m){const d=new Date(y,m,1);while(!isWeekday(d))d.setDate(d.getDate()+1);return d}
+function updateDueLabels(){const d=dateParts(today()),weekday=isWeekday(d),weekly=d.getDay()===1,first=firstWeekday(d.getFullYear(),d.getMonth()).getDate()===d.getDate();document.getElementById('dailyDue').textContent=weekday?'· DUE':'· NOT DUE';document.getElementById('weeklyDue').textContent=weekly?'· DUE':'· NOT DUE';document.getElementById('monthlyDue').textContent=first?'· DUE':'· NOT DUE'}
+updateDueLabels();
+
 const FREQUENCIES={daily:[0,1,2,3,4,5,6,9],weekly:[7,6,9],monthly:[8,6,9]};
 function chooseFrequency(value){frequency=value;viewSections=FREQUENCIES[value]||FREQUENCIES.daily;document.getElementById('newday').textContent=value==='daily'?'Start New Day':'Reset This Checklist';document.getElementById('frequencyPicker').hidden=true;document.getElementById('checklistView').hidden=false;day.value=today();load()}
 document.querySelectorAll('[data-frequency]').forEach(b=>b.onclick=()=>chooseFrequency(b.dataset.frequency));
