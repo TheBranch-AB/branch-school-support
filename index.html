@@ -6,7 +6,7 @@
 <div id="frequencyPicker" class="meter-wrap"><strong>What checklist are you working on?</strong><p class="small">Choose a schedule to see the tasks for that round.</p><div class="actions"><button class="btn" data-frequency="daily">Daily</button><button class="btn secondary" data-frequency="weekly">Weekly</button><button class="btn secondary" data-frequency="monthly">Monthly</button></div></div>
 <div id="checklistView" hidden>
 <div class="datebar"><label>Checklist date<input id="day" type="date"></label><label>Employee initials<input id="initials" placeholder="Initials" maxlength="15" autocomplete="off"></label></div>
-<div class="meter-wrap"><div class="between"><strong>Today's progress</strong><span id="overall" class="daybadge">0 / 0</span></div><div class="meter"><div id="meter" class="fill"></div></div><p class="tip">Your progress is saved automatically, even if you refresh or close this page.</p></div>
+<div class="meter-wrap"><div class="between"><strong>Checklist progress</strong><span id="overall" class="daybadge">0 / 0</span></div><div class="meter"><div id="meter" class="fill"></div></div><p class="tip">Your progress is saved automatically, even if you refresh or close this page.</p></div>
 <div class="between"><div id="position" class="eyebrow"></div><span id="partcount" class="daybadge"></span></div>
 <h2 id="heading" class="section-title"></h2><p id="subtitle" class="small"></p>
 <select id="jump" class="jump" aria-label="Jump to another section"></select><div id="tasks"></div>
@@ -20,7 +20,7 @@ let state={},current=0,frequency=null,viewSections=[];
 const today=()=>{let d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const key=()=> 'branch-facilities-v1-'+day.value+'-'+frequency;
 const FREQUENCIES={daily:[0,1,2,3,4,5,6,9],weekly:[7,6,9],monthly:[8,6,9]};
-function chooseFrequency(value){frequency=value;viewSections=FREQUENCIES[value]||FREQUENCIES.daily;document.getElementById('frequencyPicker').hidden=true;document.getElementById('checklistView').hidden=false;day.value=today();load()}
+function chooseFrequency(value){frequency=value;viewSections=FREQUENCIES[value]||FREQUENCIES.daily;document.getElementById('newday').textContent=value==='daily'?'Start New Day':'Reset This Checklist';document.getElementById('frequencyPicker').hidden=true;document.getElementById('checklistView').hidden=false;day.value=today();load()}
 document.querySelectorAll('[data-frequency]').forEach(b=>b.onclick=()=>chooseFrequency(b.dataset.frequency));
 
 function save(){state.initials=initials.value;state.notes=notes.value;state.current=current;try{localStorage.setItem(key(),JSON.stringify(state))}catch(e){}}
@@ -34,7 +34,7 @@ function showWilliamOverlay(duration=1500){
 }
 function startNewDay(){
  if(transitioning)return;
- if(!confirm('Start a new day? This clears the current checklist, notes, and initials. Email your report first if you need a copy.'))return;
+ if(!confirm('Reset this '+frequency+' checklist? This clears its checkmarks, notes, and initials. Email your report first if you need a copy.'))return;
  transitioning=true;showWilliamOverlay(1500);
  setTimeout(()=>{
   const oldKey=key();
