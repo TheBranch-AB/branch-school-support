@@ -58,17 +58,17 @@ function exportReport(){const esc=x=>'"'+String(x??'').replace(/"/g,'""')+'"';co
 function emailChecklist(){
  const recipient='scott.hill@thebranchschool.org';
  const subject='William - '+frequency.toUpperCase()+' Facilities Checklist - '+day.value;
- const selected= viewSections.map(i=>[i,SECTIONS[i]]);
- const total=daily.reduce((n,s)=>n+s[2].length,0);
- const completed=daily.reduce((n,s,si)=>n+s[2].filter((_,i)=>state.checked?.[si+':'+i]).length,0);
+ const selected=viewSections.map(i=>[i,SECTIONS[i]]);
+ const total=selected.reduce((n,[,section])=>n+section[2].length,0);
+ const completed=selected.reduce((n,[si,section])=>n+section[2].filter((_,i)=>state.checked?.[si+':'+i]).length,0);
  const lines=['THE BRANCH SCHOOL - '+frequency.toUpperCase()+' FACILITIES CHECKLIST','Date: '+day.value,'Employee initials: '+(initials.value.trim()||'Not entered'),frequency.toUpperCase()+' progress: '+completed+' of '+total+' tasks complete','','Completed = [X] | Unfinished = [ ]',''];
- SECTIONS.forEach((section,si)=>{
-   lines.push((si<6?(si+1)+'. ':'')+section[0].toUpperCase());
+ selected.forEach(([si,section])=>{
+   lines.push(section[0].toUpperCase());
    section[2].forEach((task,i)=>lines.push((state.checked?.[si+':'+i]?'[X] ':'[ ] ')+task));
    lines.push('');
  });
- lines.push('DAILY NOTES / ITEMS TO CARRY FORWARD',notes.value.trim()||'No notes entered.','','Sent from William’s Branch School Facilities Checklist');
- const url='mailto:'+recipient+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+ lines.push(frequency.toUpperCase()+' NOTES / ITEMS TO CARRY FORWARD',notes.value.trim()||'No notes entered.','','Sent from William’s Branch School Facilities Checklist');
+ const url='mailto:'+recipient+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\\n'));
  if(url.length>12000&&!confirm('This checklist is long and some email apps may truncate it. Continue opening Mail?'))return;
  document.getElementById('submitstatus').textContent='Your email app will open with Scott’s address and the checklist ready. Tap Send to deliver it.';
  window.location.href=url;
