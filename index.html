@@ -20,8 +20,9 @@ let state={},current=0,frequency=null,viewSections=[];
 const today=()=>{let d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const key=()=> 'branch-facilities-v1-'+day.value+'-'+frequency;
 const FREQUENCIES={daily:[0,1,2,3,4,5,6,9],weekly:[7,6,9],monthly:[8,6,9]};
-function chooseFrequency(value){frequency=value;viewSections=FREQUENCIES[value]||FREQUENCIES.daily;document.getElementById('frequencyPicker').hidden=true;document.getElementById('checklistView').hidden=false;day.value=today();load()}\ndocument.querySelectorAll('[data-frequency]').forEach(b=>b.onclick=()=>chooseFrequency(b.dataset.frequency));
-const countDaily=6;
+function chooseFrequency(value){frequency=value;viewSections=FREQUENCIES[value]||FREQUENCIES.daily;document.getElementById('frequencyPicker').hidden=true;document.getElementById('checklistView').hidden=false;day.value=today();load()}
+document.querySelectorAll('[data-frequency]').forEach(b=>b.onclick=()=>chooseFrequency(b.dataset.frequency));
+
 function save(){state.initials=initials.value;state.notes=notes.value;state.current=current;try{localStorage.setItem(key(),JSON.stringify(state))}catch(e){}}
 function load(){if(!frequency)return;try{state=JSON.parse(localStorage.getItem(key())||'{}')}catch(e){state={}};current=state.current||0;initials.value=state.initials||'';notes.value=state.notes||'';render()}
 let overlayTimer=null,transitioning=false;
