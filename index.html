@@ -71,7 +71,7 @@ function emailChecklist(){
    lines.push('');
  });
  lines.push(frequency.toUpperCase()+' NOTES / ITEMS TO CARRY FORWARD',notes.value.trim()||'No notes entered.','','Sent from William’s Branch School Facilities Checklist');
- const url='mailto:'+recipient+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\\n'));
+ const url='mailto:'+recipient+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
  if(url.length>12000&&!confirm('This checklist is long and some email apps may truncate it. Continue opening Mail?'))return;
  document.getElementById('submitstatus').textContent='Your email app will open with Scott’s address and the checklist ready. Tap Send to deliver it.';
  window.location.href=url;
