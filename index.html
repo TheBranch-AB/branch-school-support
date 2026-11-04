@@ -40,7 +40,7 @@ function startNewDay(){
   save();render();window.scrollTo(0,0);transitioning=false;
  },1650);
 }
-function render(){current=Math.max(0,Math.min(SECTIONS.length-1,current));const actualIndex=viewSections[current],s=SECTIONS[actualIndex];document.getElementById('heading').textContent=s[0];document.getElementById('subtitle').textContent=s[1];document.getElementById('position').textContent='SECTION '+(current+1)+' OF '+SECTIONS.length;
+function render(){current=Math.max(0,Math.min(viewSections.length-1,current));const actualIndex=viewSections[current],s=SECTIONS[actualIndex];document.getElementById('heading').textContent=s[0];document.getElementById('subtitle').textContent=s[1];document.getElementById('position').textContent=frequency.toUpperCase()+' · SECTION '+(current+1)+' OF '+viewSections.length;
 document.getElementById('jump').value=String(current);const list=document.getElementById('tasks');list.replaceChildren();
 s[2].forEach((t,i)=>{const id=actualIndex+':'+i,done=!!(state.checked||{})[id],el=document.createElement('div');el.className='item'+(done?' done':'');el.setAttribute('role','checkbox');el.setAttribute('aria-checked',String(done));el.tabIndex=0;const sq=document.createElement('span');sq.className='square';sq.textContent=done?'✓':'';const tx=document.createElement('span');tx.className='tasktext';tx.textContent=t;el.append(sq,tx);const toggle=()=>{state.checked||={};state.checked[id]=!state.checked[id];save();render()};el.onclick=toggle;el.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();toggle()}};list.append(el)});
 const completed=s[2].filter((_,i)=>state.checked?.[actualIndex+':'+i]).length;document.getElementById('partcount').textContent=completed+' / '+s[2].length;
@@ -74,5 +74,5 @@ function emailChecklist(){
  window.location.href=url;
 }
 document.getElementById('emailreport').onclick=emailChecklist;
-document.getElementById('newday').onclick=startNewDay;\nconst backToFrequency=document.createElement('button');backToFrequency.className='btn secondary';backToFrequency.textContent='← Change Checklist';backToFrequency.style.marginTop='12px';backToFrequency.onclick=()=>{save();document.getElementById('checklistView').hidden=true;document.getElementById('frequencyPicker').hidden=false};document.querySelector('.actions').after(backToFrequency);
+document.getElementById('newday').onclick=startNewDay;\nconst backToFrequency=document.createElement('button');backToFrequency.className='btn secondary';backToFrequency.textContent='← Change Checklist';backToFrequency.style.marginTop='12px';backToFrequency.onclick=()=>{save();document.getElementById('checklistView').hidden=true;document.getElementById('frequencyPicker').hidden=false};document.getElementById('newday').parentElement.after(backToFrequency);
 </script></body></html>
